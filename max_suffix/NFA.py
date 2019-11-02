@@ -4,10 +4,11 @@ from collections import deque
 class NFA:
     start = 0
     regex = ''
+    edges = {}
     def __init__(self, regex):
         if len(regex) == 1:
             self.nodes_count = 2
-            self.edges = {(0, 1, regex)}
+            self.edges = {0: [(1, regex)]}
             self.terminals = {1}
             self.start = 0
             return
@@ -32,17 +33,21 @@ class NFA:
         self.edges = stack[0].edges
         if len(self.terminals) > 1:
             for t in self.terminals:
-                self.edges.add((t, self.nodes_count, ''))
+                self.edges[t] = [(self.nodes_count, '')]
             self.terminals = {self.nodes_count}
+            self.edges[self.nodes_count] = []
             self.nodes_count += 1
 
         self.remove_unreachable()
 
     def plus(self, other):
-        other.edges = {(i[0] + 1, i[1] + 1, i[2]) for i in other.edges}
-        self.edges = {(i[0] + other.nodes_count + 1, i[1] + other.nodes_count + 1, i[2]) for i in self.edges}
-        self.edges.add((0, 1, ''))
-        self.edges.add((0, other.nodes_count + 1, ''))
+        other.edges = {x + 1: [(i[0] + 1, i[1]) for i in y] for x, y in other.edges.items()}
+        self.edges = {x + other.nodes_count + 1: [(i[0] + other.nodes_count + 1, i[1]) for i in y] for x, y in self.edges.items()}
+        if 0 in self.edges:
+            self.edges[0].append((1, ''))
+        else:
+            self.edges[0] = [(1, '')]
+        self.edges[0].append((other.nodes_count + 1, ''))
         self.edges.update(other.edges)
         other.terminals = set(map(lambda x: x + 1, other.terminals))
         self.terminals = set(map(lambda x: x + other.nodes_count + 1, self.terminals))
@@ -52,13 +57,16 @@ class NFA:
 
     def star(self):
         for i in self.terminals:
-            self.edges.add((i, 0, ''))
+            if i in self.edges:
+                self.edges[i].append((0, ''))
+            else:
+                self.edges[i] = [(0, '')]
         return self
 
     def dot(self, other):
         other.edges = {(i[0] + self.nodes_count, i[1] + self.nodes_count, i[2]) for i in other.edges}
         other.terminals = set(map(lambda x: x + self.nodes_count, other.terminals))
-        self.edges.update({(i, self.nodes_count, '') for i in self.terminals})
+        self.edges.update({i: (self.nodes_count, '') for i in self.terminals})
         self.edges.update(other.edges)
         self.terminals = other.terminals
         self.nodes_count += other.nodes_count
@@ -81,11 +89,20 @@ class NFA:
 
     def print(self):
         print("End nodes: {ends}".format(ends=self.terminals))
-        for a, b, c in self.edges:
-            print(a, ' -> ', b, ' via ', c)
+        for a, b in self.edges.items():
+            for x, y in b:
+                print(a, ' -> ', x, ' via ', y)
 
     def reverse(self):
-        self.edges = {(b, a, c) for a, b, c, in self.edges}
+        tmp = {}
+        for nfrom, lst in self.edges.items():
+            for nto, symbol in lst:
+                if nto in tmp:
+                    tmp[nto].append((nfrom, symbol))
+                else:
+                    tmp[nto] = [(nfrom, symbol)]
+
+        self.edges = tmp
         tmp = self.start
         self.start = self.terminals.pop()
         self.terminals = {tmp}

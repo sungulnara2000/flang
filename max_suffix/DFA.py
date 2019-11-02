@@ -4,9 +4,10 @@ from collections import deque
 
 class DFA:
     def __init__(self, regex, nfa):
+        self.nfa = nfa
         self.alphabet = set(regex) - set("+.*")
         self.terminals = set()
-        self.old_edges = {nfrom: [(nto, symbol) for i, nto, symbol in nfa.edges if i == nfrom] for nfrom in range(nfa.nodes_count)}
+        # nfa.edges = {nfrom: [(nto, symbol) for i, nto, symbol in nfa.edges if i == nfrom] for nfrom in range(nfa.nodes_count)}
         self.edges = {}
         # find epsilon-closure for each node
         self.eps_closure = {}
@@ -37,7 +38,7 @@ class DFA:
         while len(stack) > 0:
             cur = stack.pop()
             used.add(cur)
-            for next_by_eps in [i[0] for i in self.old_edges[cur] if i[1] == '' and i[0] not in used]:
+            for next_by_eps in [i[0] for i in self.nfa.edges[cur] if i[1] == '' and i[0] not in used]:
                 stack.append(next_by_eps)
         self.eps_closure[node] = frozenset(used)
 
@@ -45,7 +46,7 @@ class DFA:
         state = frozenset(state)
         next = set()
         for nfrom in state:
-            for b, c in self.old_edges[nfrom]:
+            for b, c in self.nfa.edges[nfrom]:
                 if c == symbol:
                     next.update(self.eps_closure[b])
         if len(next) > 0:
