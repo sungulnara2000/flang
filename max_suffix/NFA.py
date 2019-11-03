@@ -27,8 +27,8 @@ class reversedNFA:
                     second = stack.pop()
                     first = stack.pop()
                     stack.append(first.dot(second))
-                # else:
-                #     raiseError
+            if len(stack) > 1:
+                raise ValueError('Bad input. Few operators.')
             self.terminals = stack[0].terminals
             self.nodes_count = stack[0].nodes_count
             self.edges = stack[0].edges
@@ -40,13 +40,13 @@ class reversedNFA:
                 self.nodes_count += 1
 
             self.remove_unreachable()
-            print("normal NFA:")
-            self.print()
             self.reverse()
-            print("reversed NFA:")
-            self.print()
 
     def simple_NFA(self, symbol):
+        if symbol not in {'a', 'b', 'c', '1'}:
+            raise ValueError("Bad symbol: ", symbol)
+        if symbol == '1':
+            symbol = ''
         self.nodes_count = 2
         self.edges = {0: [(1, symbol)], 1: []}
         self.terminals = {1}
