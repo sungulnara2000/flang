@@ -29,4 +29,7 @@ class Test(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    regex = input()
+    word = input()
+    print(reversedDFA(regex).find_max_pref(word[::-1]))
