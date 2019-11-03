@@ -1,17 +1,14 @@
-from NFA import NFA
-from DFA import DFA
+from NFA import reversedNFA
+from DFA import reversedDFA
 
 
 def main():
-    # nfa = NFA('ab.')
-    # print(nfa.start)
-    # nfa.reverse()
-    # nfa.print()
-    # dfa = DFA('ab.', nfa)
-    # answer = dfa.find_max_pref('bb')
-    # print(answer)
-    NFA("ab+").print()
-    DFA("ab+", NFA("ab+")).print()
+    # reversedNFA('ab + c.∗')
+    dfa = reversedDFA('acb..bab.c. ∗ .ab.ba. + . + ∗a.')
+    dfa.print_dfa()
+    word = 'cbaa'
+    answer = dfa.find_max_pref(word[::-1])
+    print(answer)
 
 if __name__ == "__main__":
     main()
