@@ -60,13 +60,6 @@ class reversedDFA(reversedNFA):
                 print(a[0], ' -> ', b, ' via ', a[1])
 
     def find_max_pref(self, word):
-        # max_len = 0
-        # cur = self.start
-        # next = self.edges.get((cur, word[max_len]), [])
-        # while len(next) > 0 and max_len < len(word) - 1:
-        #     max_len += 1
-        #     next = self.edges.get((next, word[max_len]), [])
-        # return max_len + 1
         max_len = 0
         cur = self.start
         for i in word:

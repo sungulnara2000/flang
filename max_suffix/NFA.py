@@ -10,23 +10,29 @@ class reversedNFA:
         self.regex = regex
         regex = regex.replace(' ', '')
         self.alphabet = set(regex) - set('+.∗')
-        if len(regex) == 1:
+        if len(regex) == 1 and regex not in {'+', '.', '∗'}:
             self.simple_NFA(regex)
         else:
             stack = deque()
             for i in regex:
-                if i not in {'+', '∗', '.'}:
-                    stack.append(reversedNFA(i))
-                elif i == '+':
+                if i == '+':
+                    if len(stack) < 2:
+                        raise ValueError('Bad input. Few arguments.')
                     second = stack.pop()
                     first = stack.pop()
                     stack.append(first.plus(second))
                 elif i == '∗':
+                    if len(stack) < 1:
+                        raise ValueError('Bad input. Few arguments.')
                     stack.append(stack.pop().star())
                 elif i == '.':
+                    if len(stack) < 2:
+                        raise ValueError('Bad input. Few arguments.')
                     second = stack.pop()
                     first = stack.pop()
                     stack.append(first.dot(second))
+                else:
+                    stack.append(reversedNFA(i))
             if len(stack) > 1:
                 raise ValueError('Bad input. Few operators.')
             self.terminals = stack[0].terminals
